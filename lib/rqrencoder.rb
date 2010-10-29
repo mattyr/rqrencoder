@@ -1,3 +1,4 @@
-module Rqrencoder
-  # Your code goes here...
+module RQREncoder
+  require 'rqrencoder/qr_encoder'
+  require 'rqrencoder/qrcode'
 end

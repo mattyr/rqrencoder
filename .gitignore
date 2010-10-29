@@ -1,3 +1,6 @@
 pkg/*
 *.gem
 .bundle
+*.swp
+lib/rqrencoder/CQREncoder.bundle
+tmp/*

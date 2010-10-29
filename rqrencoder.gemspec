@@ -4,13 +4,13 @@ require "rqrencoder/version"
 
 Gem::Specification.new do |s|
   s.name        = "rqrencoder"
-  s.version     = Rqrencoder::VERSION
+  s.version     = RQREncoder::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = "http://rubygems.org/gems/rqrencoder"
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.authors     = ["Matt Robinson"]
+  s.email       = ["robinson.matty@gmail.com"]
+  s.homepage    = "http://github.com/mattyr/rqrencoder"
+  s.summary     = %q{A simple ruby QR Code generator with C backing for speed}
+  s.description = %q{A simple ruby QR Code generator with C backing for speed}
 
   s.rubyforge_project = "rqrencoder"
 
@@ -18,4 +18,5 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+	s.extensions << 'ext/rqrencoder/extconf.rb'
 end

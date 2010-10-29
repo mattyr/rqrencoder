@@ -1,3 +1,3 @@
-module Rqrencoder
-  VERSION = "0.0.1"
+module RQREncoder
+  VERSION = "0.1.0"
 end

@@ -1,4 +1,4 @@
-require 'rqrencoder/CQREncoder'
+require 'rqrencoder/RQREncoder'
 
 module RQREncoder
   class QREncoder
@@ -32,7 +32,7 @@ module RQREncoder
     end
 
     def encode(data)
-      cencoder = CQREncoder::CQR_Encode.new
+      cencoder = CQR_Encode.new
       unless cencoder.EncodeData(@options[:level], @options[:version], @options[:auto_extend], @options[:masking], data)
         raise Exception.new("qrcode encode error!")
       end
