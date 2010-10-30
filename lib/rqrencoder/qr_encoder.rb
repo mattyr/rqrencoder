@@ -2,16 +2,13 @@ require 'rqrencoder/RQREncoder'
 
 module RQREncoder
   class QREncoder
-        # options
+    # options
+    #  :version 		will auto-extend if too low (default)
     #  :level       L:0, M:1(default), Q:2, H:3
-    #  :version     S:0(default), M:1, L:2
-    #  :auto_extend  true(default)|false auto extent if over version size
-    #  :masking     masking pattern 0-7, -1(default auto)
-    #  :length      data length
-    #  :module_size module pixel size
-    #  :eps_preview true|false(default)
+    #  :mode				hint for mode NUM:0, A/N:1 (default), 8Bit: 2, KANJI: 3
+    #  :case_sensitive true(default) / false
   	def initialize(options = {})
-  		@options = { :level => 1, :version => 0, :auto_extend => true, :masking => -1 }
+  		@options = { :level => 1, :version => 0, :mode => 2, :case_sensitive => true }
       @options.merge!(options)
   	end
 
@@ -27,18 +24,16 @@ module RQREncoder
 
     def method_missing(sym, *args, &block)
       if (sym[-1] == '=')
-        @options[sym[0..-2].to_sym] = args[0]
+				key = sym[0..-2].to_sym
+				super(sym, *args, &block) unless (@options.has_key? key)
+        @options[key] = args[0]
       end
     end
 
     def encode(data)
-      cencoder = CQR_Encode.new
-      unless cencoder.EncodeData(@options[:level], @options[:version], @options[:auto_extend], @options[:masking], data)
-        raise Exception.new("qrcode encode error!")
-      end
-      result = QRCode.new(cencoder.m_nLevel, cencoder.m_nVersion, cencoder.m_nMaskingNo, cencoder.m_nSymbleSize, cencoder.results)
-      cencoder = nil
-      result
+			c_code_result = RQREncoder.QRcode_encodeString(data, @options[:version], @options[:level], @options[:mode], @options[:case_sensitive] ? 1 : 0) 
+			puts c_code_result.inspect
+      QRCode.new(data, @options[:level], c_code_result.version, c_code_result.width, c_code_result.modules)
     end
 	
   end

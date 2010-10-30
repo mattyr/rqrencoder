@@ -10,30 +10,6 @@
 
 #define SWIGRUBY
 
-
-#ifdef __cplusplus
-/* SwigValueWrapper is described in swig.swg */
-template<typename T> class SwigValueWrapper {
-  struct SwigMovePointer {
-    T *ptr;
-    SwigMovePointer(T *p) : ptr(p) { }
-    ~SwigMovePointer() { delete ptr; }
-    SwigMovePointer& operator=(SwigMovePointer& rhs) { T* oldptr = ptr; ptr = 0; delete oldptr; ptr = rhs.ptr; rhs.ptr = 0; return *this; }
-  } pointer;
-  SwigValueWrapper& operator=(const SwigValueWrapper<T>& rhs);
-  SwigValueWrapper(const SwigValueWrapper<T>& rhs);
-public:
-  SwigValueWrapper() : pointer(0) { }
-  SwigValueWrapper& operator=(const T& t) { SwigMovePointer tmp(new T(t)); pointer = tmp; return *this; }
-  operator T&() const { return *pointer.ptr; }
-  T *operator&() { return pointer.ptr; }
-};
-
-template <typename T> T SwigValueInit() {
-  return T();
-}
-#endif
-
 /* -----------------------------------------------------------------------------
  *  This section contains generic SWIG labels for method/variable
  *  declarations/attributes, and other compiler dependent labels.
@@ -1813,17 +1789,16 @@ int SWIG_Ruby_arity( VALUE proc, int minimal )
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_CQR_Encode swig_types[0]
-#define SWIGTYPE_p_a_177__unsigned_char swig_types[1]
-#define SWIGTYPE_p_bool swig_types[2]
-#define SWIGTYPE_p_char swig_types[3]
-#define SWIGTYPE_p_int swig_types[4]
-#define SWIGTYPE_p_tagQR_VERSIONINFO swig_types[5]
-#define SWIGTYPE_p_tagRS_BLOCKINFO swig_types[6]
+#define SWIGTYPE_p_QRcode swig_types[0]
+#define SWIGTYPE_p_QRecLevel swig_types[1]
+#define SWIGTYPE_p_QRencodeMode swig_types[2]
+#define SWIGTYPE_p__QRcode_List swig_types[3]
+#define SWIGTYPE_p__QRinput swig_types[4]
+#define SWIGTYPE_p__QRinput_Struct swig_types[5]
+#define SWIGTYPE_p_char swig_types[6]
 #define SWIGTYPE_p_unsigned_char swig_types[7]
-#define SWIGTYPE_p_unsigned_short swig_types[8]
-static swig_type_info *swig_types[10];
-static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
+static swig_type_info *swig_types[9];
+static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -1842,22 +1817,11 @@ static VALUE mRQREncoder;
 #define SWIG_VERSION SWIGVERSION
 
 
-#define SWIG_as_voidptr(a) const_cast< void * >(static_cast< const void * >(a)) 
-#define SWIG_as_voidptrptr(a) ((void)SWIG_as_voidptr(*a),reinterpret_cast< void** >(a)) 
+#define SWIG_as_voidptr(a) (void *)((const void *)(a)) 
+#define SWIG_as_voidptrptr(a) ((void)SWIG_as_voidptr(*a),(void**)(a)) 
 
 
-#include <stdexcept>
-
-
-#include "win2ansi.h"
-#include "QR_Encode.h"
-
-
-SWIGINTERNINLINE VALUE
-SWIG_From_bool  (bool value)
-{
-  return value ? Qtrue : Qfalse;
-}
+#include <qrencode.h>
 
 
 #include <limits.h>
@@ -1925,32 +1889,74 @@ SWIG_AsVal_int (VALUE obj, int *val)
     if ((v < INT_MIN || v > INT_MAX)) {
       return SWIG_OverflowError;
     } else {
-      if (val) *val = static_cast< int >(v);
+      if (val) *val = (int)(v);
     }
   }  
   return res;
 }
 
 
-SWIGINTERN int
-SWIG_AsVal_bool (VALUE obj, bool *val)
+/*@SWIG:/usr/local/share/swig/2.0.1/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
+SWIGINTERN VALUE SWIG_AUX_NUM2ULONG(VALUE *args)
 {
-  if (obj == Qtrue) {
-    if (val) *val = true;
-    return SWIG_OK;
-  } else if (obj == Qfalse) {
-    if (val) *val = false;
-    return SWIG_OK;
-  } else {
-    int res = 0;
-    if (SWIG_AsVal_int (obj, &res) == SWIG_OK) {    
-      if (val) *val = res ? true : false;
+  VALUE obj = args[0];
+  VALUE type = TYPE(obj);
+  unsigned long *res = (unsigned long *)(args[1]);
+  *res = type == T_FIXNUM ? NUM2ULONG(obj) : rb_big2ulong(obj);
+  return obj;
+}
+/*@SWIG@*/
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_long (VALUE obj, unsigned long *val) 
+{
+  VALUE type = TYPE(obj);
+  if ((type == T_FIXNUM) || (type == T_BIGNUM)) {
+    unsigned long v;
+    VALUE a[2];
+    a[0] = obj;
+    a[1] = (VALUE)(&v);
+    if (rb_rescue(RUBY_METHOD_FUNC(SWIG_AUX_NUM2ULONG), (VALUE)a, RUBY_METHOD_FUNC(SWIG_ruby_failed), 0) != Qnil) {
+      if (val) *val = v;
       return SWIG_OK;
     }
-  }  
+  }
   return SWIG_TypeError;
 }
 
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_char (VALUE obj, unsigned char *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v > UCHAR_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = (unsigned char)(v);
+    }
+  }  
+  return res;
+}
+
+SWIGINTERN VALUE QRcode_modules(QRcode *self){
+    VALUE result, row;
+    unsigned char *p;
+    int x, y, bit;
+    result = rb_ary_new2(self->width);
+    p = self->data;
+    for(y=0; y < self->width; y++) {
+      row = rb_ary_new2(self->width);
+      for(x=0; x < self->width; x++) {
+        bit = *p & 1;
+        rb_ary_push(row, bit == 0 ? Qfalse : Qtrue);
+        p++;
+      }
+      rb_ary_push(result, row);
+    }
+    return result;
+  }
 
 SWIGINTERN swig_type_info*
 SWIG_pchar_descriptor(void)
@@ -1978,7 +1984,7 @@ SWIG_AsCharPtrAndSize(VALUE obj, char** cptr, size_t* psize, int *alloc)
     if (cptr)  {
       if (alloc) {
 	if (*alloc == SWIG_NEWOBJ) {
-	  *cptr = reinterpret_cast< char* >(memcpy((new char[size]), cstr, sizeof(char)*(size)));
+	  *cptr = (char *)memcpy((char *)malloc((size)*sizeof(char)), cstr, sizeof(char)*(size));
 	} else {
 	  *cptr = cstr;
 	  *alloc = SWIG_OLDOBJ;
@@ -2005,68 +2011,48 @@ SWIG_AsCharPtrAndSize(VALUE obj, char** cptr, size_t* psize, int *alloc)
 
 
 
-SWIGINTERN VALUE CQR_Encode_results(CQR_Encode *self){
-  VALUE result = rb_ary_new2(self->m_nSymbleSize);
-  size_t ii = 0;
-  for (; ii < (size_t)self->m_nSymbleSize; ++ii) {
-    VALUE innerAry = rb_ary_new2(self->m_nSymbleSize);
-    rb_ary_push(result, innerAry);
-    size_t jj = 0;
-    for (; jj < (size_t)self->m_nSymbleSize; ++jj) {
-     rb_ary_push(innerAry, self->m_byModuleData[ii][jj] ? Qtrue : Qfalse);
-    }
+SWIGINTERN VALUE
+_wrap_QRinput_new(int argc, VALUE *argv, VALUE self) {
+  QRinput *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
   }
-  return result;
+  result = (QRinput *)QRinput_new();
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRinput, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
 }
-swig_class SwigClassRS_BLOCKINFO;
+
 
 SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_ncRSBlock_set(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *arg1 = (RS_BLOCKINFO *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
+_wrap_QRinput_new2(int argc, VALUE *argv, VALUE self) {
+  int arg1 ;
+  QRecLevel arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
+  QRinput *result = 0 ;
+  VALUE vresult = Qnil;
   
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
   }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "RS_BLOCKINFO *","ncRSBlock", 1, self )); 
-  }
-  arg1 = reinterpret_cast< RS_BLOCKINFO * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
+  ecode1 = SWIG_AsVal_int(argv[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","QRinput_new2", 1, argv[0] ));
+  } 
+  arg1 = (int)(val1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","ncRSBlock", 2, argv[0] ));
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "QRecLevel","QRinput_new2", 2, argv[1] ));
   } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->ncRSBlock = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_ncRSBlock_get(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *arg1 = (RS_BLOCKINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "RS_BLOCKINFO *","ncRSBlock", 1, self )); 
-  }
-  arg1 = reinterpret_cast< RS_BLOCKINFO * >(argp1);
-  result = (int) ((arg1)->ncRSBlock);
-  vresult = SWIG_From_int(static_cast< int >(result));
+  arg2 = (QRecLevel)(val2);
+  result = (QRinput *)QRinput_new2(arg1,arg2);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRinput, 0 |  0 );
   return vresult;
 fail:
   return Qnil;
@@ -2074,1203 +2060,536 @@ fail:
 
 
 SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_ncAllCodeWord_set(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *arg1 = (RS_BLOCKINFO *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "RS_BLOCKINFO *","ncAllCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< RS_BLOCKINFO * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","ncAllCodeWord", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->ncAllCodeWord = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_ncAllCodeWord_get(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *arg1 = (RS_BLOCKINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "RS_BLOCKINFO *","ncAllCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< RS_BLOCKINFO * >(argp1);
-  result = (int) ((arg1)->ncAllCodeWord);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_ncDataCodeWord_set(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *arg1 = (RS_BLOCKINFO *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "RS_BLOCKINFO *","ncDataCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< RS_BLOCKINFO * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","ncDataCodeWord", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->ncDataCodeWord = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_ncDataCodeWord_get(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *arg1 = (RS_BLOCKINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "RS_BLOCKINFO *","ncDataCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< RS_BLOCKINFO * >(argp1);
-  result = (int) ((arg1)->ncDataCodeWord);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
-SWIGINTERN VALUE
-_wrap_RS_BLOCKINFO_allocate(VALUE self) {
-#else
-  SWIGINTERN VALUE
-  _wrap_RS_BLOCKINFO_allocate(int argc, VALUE *argv, VALUE self) {
-#endif
-    
-    
-    VALUE vresult = SWIG_NewClassInstance(self, SWIGTYPE_p_tagRS_BLOCKINFO);
-#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
-    rb_obj_call_init(vresult, argc, argv);
-#endif
-    return vresult;
-  }
-  
-
-SWIGINTERN VALUE
-_wrap_new_RS_BLOCKINFO(int argc, VALUE *argv, VALUE self) {
-  RS_BLOCKINFO *result = 0 ;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  result = (RS_BLOCKINFO *)new RS_BLOCKINFO();
-  DATA_PTR(self) = result;
-  return self;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN void
-free_RS_BLOCKINFO(RS_BLOCKINFO *arg1) {
-    delete arg1;
-}
-
-swig_class SwigClassQR_VERSIONINFO;
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_nVersionNo_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","nVersionNo", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","nVersionNo", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->nVersionNo = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_nVersionNo_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","nVersionNo", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (int) ((arg1)->nVersionNo);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_ncAllCodeWord_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","ncAllCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","ncAllCodeWord", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->ncAllCodeWord = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_ncAllCodeWord_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","ncAllCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (int) ((arg1)->ncAllCodeWord);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_ncDataCodeWord_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  int *arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","ncDataCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_int, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "int [4]","ncDataCodeWord", 2, argv[0] )); 
-  } 
-  arg2 = reinterpret_cast< int * >(argp2);
-  {
-    if (arg2) {
-      size_t ii = 0;
-      for (; ii < (size_t)4; ++ii) arg1->ncDataCodeWord[ii] = arg2[ii];
-    } else {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""ncDataCodeWord""' of type '""int [4]""'");
-    }
-  }
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_ncDataCodeWord_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","ncDataCodeWord", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (int *)(int *) ((arg1)->ncDataCodeWord);
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_ncAlignPoint_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","ncAlignPoint", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","ncAlignPoint", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->ncAlignPoint = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_ncAlignPoint_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","ncAlignPoint", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (int) ((arg1)->ncAlignPoint);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_nAlignPoint_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  int *arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","nAlignPoint", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_int, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "int [6]","nAlignPoint", 2, argv[0] )); 
-  } 
-  arg2 = reinterpret_cast< int * >(argp2);
-  {
-    if (arg2) {
-      size_t ii = 0;
-      for (; ii < (size_t)6; ++ii) arg1->nAlignPoint[ii] = arg2[ii];
-    } else {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""nAlignPoint""' of type '""int [6]""'");
-    }
-  }
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_nAlignPoint_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","nAlignPoint", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (int *)(int *) ((arg1)->nAlignPoint);
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_RS_BlockInfo1_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  RS_BLOCKINFO *arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","RS_BlockInfo1", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "RS_BLOCKINFO [4]","RS_BlockInfo1", 2, argv[0] )); 
-  } 
-  arg2 = reinterpret_cast< RS_BLOCKINFO * >(argp2);
-  {
-    if (arg2) {
-      size_t ii = 0;
-      for (; ii < (size_t)4; ++ii) arg1->RS_BlockInfo1[ii] = arg2[ii];
-    } else {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""RS_BlockInfo1""' of type '""RS_BLOCKINFO [4]""'");
-    }
-  }
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_RS_BlockInfo1_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  RS_BLOCKINFO *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","RS_BlockInfo1", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (RS_BLOCKINFO *)(RS_BLOCKINFO *) ((arg1)->RS_BlockInfo1);
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_RS_BlockInfo2_set(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  RS_BLOCKINFO *arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","RS_BlockInfo2", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "RS_BLOCKINFO [4]","RS_BlockInfo2", 2, argv[0] )); 
-  } 
-  arg2 = reinterpret_cast< RS_BLOCKINFO * >(argp2);
-  {
-    if (arg2) {
-      size_t ii = 0;
-      for (; ii < (size_t)4; ++ii) arg1->RS_BlockInfo2[ii] = arg2[ii];
-    } else {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""RS_BlockInfo2""' of type '""RS_BLOCKINFO [4]""'");
-    }
-  }
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_RS_BlockInfo2_get(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *arg1 = (QR_VERSIONINFO *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  RS_BLOCKINFO *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_tagQR_VERSIONINFO, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QR_VERSIONINFO *","RS_BlockInfo2", 1, self )); 
-  }
-  arg1 = reinterpret_cast< QR_VERSIONINFO * >(argp1);
-  result = (RS_BLOCKINFO *)(RS_BLOCKINFO *) ((arg1)->RS_BlockInfo2);
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_tagRS_BLOCKINFO, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
-SWIGINTERN VALUE
-_wrap_QR_VERSIONINFO_allocate(VALUE self) {
-#else
-  SWIGINTERN VALUE
-  _wrap_QR_VERSIONINFO_allocate(int argc, VALUE *argv, VALUE self) {
-#endif
-    
-    
-    VALUE vresult = SWIG_NewClassInstance(self, SWIGTYPE_p_tagQR_VERSIONINFO);
-#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
-    rb_obj_call_init(vresult, argc, argv);
-#endif
-    return vresult;
-  }
-  
-
-SWIGINTERN VALUE
-_wrap_new_QR_VERSIONINFO(int argc, VALUE *argv, VALUE self) {
-  QR_VERSIONINFO *result = 0 ;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  result = (QR_VERSIONINFO *)new QR_VERSIONINFO();
-  DATA_PTR(self) = result;
-  return self;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN void
-free_QR_VERSIONINFO(QR_VERSIONINFO *arg1) {
-    delete arg1;
-}
-
-swig_class SwigClassCQR_Encode;
-
-#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
-SWIGINTERN VALUE
-_wrap_CQR_Encode_allocate(VALUE self) {
-#else
-  SWIGINTERN VALUE
-  _wrap_CQR_Encode_allocate(int argc, VALUE *argv, VALUE self) {
-#endif
-    
-    
-    VALUE vresult = SWIG_NewClassInstance(self, SWIGTYPE_p_CQR_Encode);
-#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
-    rb_obj_call_init(vresult, argc, argv);
-#endif
-    return vresult;
-  }
-  
-
-SWIGINTERN VALUE
-_wrap_new_CQR_Encode(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *result = 0 ;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  result = (CQR_Encode *)new CQR_Encode();
-  DATA_PTR(self) = result;
-  return self;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN void
-free_CQR_Encode(CQR_Encode *arg1) {
-    delete arg1;
-}
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nLevel_set(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nLevel", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","m_nLevel", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->m_nLevel = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nLevel_get(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nLevel", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (int) ((arg1)->m_nLevel);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nVersion_set(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nVersion", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","m_nVersion", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->m_nVersion = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nVersion_get(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nVersion", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (int) ((arg1)->m_nVersion);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_bAutoExtent_set(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  BOOL arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  bool val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_bAutoExtent", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_bool(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "BOOL","m_bAutoExtent", 2, argv[0] ));
-  } 
-  arg2 = static_cast< BOOL >(val2);
-  if (arg1) (arg1)->m_bAutoExtent = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_bAutoExtent_get(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  BOOL result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_bAutoExtent", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (BOOL) ((arg1)->m_bAutoExtent);
-  vresult = SWIG_From_bool(static_cast< bool >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nMaskingNo_set(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nMaskingNo", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","m_nMaskingNo", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->m_nMaskingNo = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nMaskingNo_get(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nMaskingNo", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (int) ((arg1)->m_nMaskingNo);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nSymbleSize_set(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nSymbleSize", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","m_nSymbleSize", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->m_nSymbleSize = arg2;
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_nSymbleSize_get(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_nSymbleSize", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (int) ((arg1)->m_nSymbleSize);
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_byModuleData_set(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  BYTE (*arg2)[177] ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_byModuleData", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_a_177__unsigned_char, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "BYTE [177][177]","m_byModuleData", 2, argv[0] )); 
-  } 
-  arg2 = reinterpret_cast< BYTE (*)[177] >(argp2);
-  {
-    if (arg2) {
-      size_t ii = 0;
-      for (; ii < (size_t)177; ++ii) {
-        if (arg2[ii]) {
-          size_t jj = 0;
-          for (; jj < (size_t)177; ++jj) arg1->m_byModuleData[ii][jj] = arg2[ii][jj];
-        } else {
-          SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""m_byModuleData""' of type '""BYTE [177][177]""'");
-        }
-      }
-    } else {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""m_byModuleData""' of type '""BYTE [177][177]""'");
-    }
-  }
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_m_byModuleData_get(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  BYTE (*result)[177] = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","m_byModuleData", 1, self )); 
-  }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (BYTE (*)[177])(BYTE (*)[177]) ((arg1)->m_byModuleData);
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_a_177__unsigned_char, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_CQR_Encode_EncodeData__SWIG_0(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
-  int arg2 ;
+_wrap_QRinput_append(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  QRencodeMode arg2 ;
   int arg3 ;
-  BOOL arg4 ;
-  int arg5 ;
-  LPCSTR arg6 = (LPCSTR) 0 ;
-  int arg7 ;
+  unsigned char *arg4 = (unsigned char *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
-  bool val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int res6 ;
-  char *buf6 = 0 ;
-  int alloc6 = 0 ;
-  int val7 ;
-  int ecode7 = 0 ;
-  BOOL result;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  int result;
   VALUE vresult = Qnil;
   
-  if ((argc < 6) || (argc > 6)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 6)",argc); SWIG_fail;
+  if ((argc < 4) || (argc > 4)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 4)",argc); SWIG_fail;
   }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","EncodeData", 1, self )); 
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_append", 1, argv[0] )); 
   }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
+  arg1 = (QRinput *)(argp1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","EncodeData", 2, argv[0] ));
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "QRencodeMode","QRinput_append", 2, argv[1] ));
   } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(argv[1], &val3);
+  arg2 = (QRencodeMode)(val2);
+  ecode3 = SWIG_AsVal_int(argv[2], &val3);
   if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "int","EncodeData", 3, argv[1] ));
+    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "int","QRinput_append", 3, argv[2] ));
   } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_bool(argv[2], &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), Ruby_Format_TypeError( "", "BOOL","EncodeData", 4, argv[2] ));
-  } 
-  arg4 = static_cast< BOOL >(val4);
-  ecode5 = SWIG_AsVal_int(argv[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), Ruby_Format_TypeError( "", "int","EncodeData", 5, argv[3] ));
-  } 
-  arg5 = static_cast< int >(val5);
-  res6 = SWIG_AsCharPtrAndSize(argv[4], &buf6, NULL, &alloc6);
-  if (!SWIG_IsOK(res6)) {
-    SWIG_exception_fail(SWIG_ArgError(res6), Ruby_Format_TypeError( "", "LPCSTR","EncodeData", 6, argv[4] ));
+  arg3 = (int)(val3);
+  res4 = SWIG_ConvertPtr(argv[3], &argp4,SWIGTYPE_p_unsigned_char, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), Ruby_Format_TypeError( "", "unsigned char const *","QRinput_append", 4, argv[3] )); 
   }
-  arg6 = reinterpret_cast< LPCSTR >(buf6);
-  ecode7 = SWIG_AsVal_int(argv[5], &val7);
-  if (!SWIG_IsOK(ecode7)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode7), Ruby_Format_TypeError( "", "int","EncodeData", 7, argv[5] ));
-  } 
-  arg7 = static_cast< int >(val7);
-  result = (BOOL)(arg1)->EncodeData(arg2,arg3,arg4,arg5,arg6,arg7);
-  vresult = SWIG_From_bool(static_cast< bool >(result));
-  if (alloc6 == SWIG_NEWOBJ) delete[] buf6;
+  arg4 = (unsigned char *)(argp4);
+  result = (int)QRinput_append(arg1,arg2,arg3,(unsigned char const *)arg4);
+  vresult = SWIG_From_int((int)(result));
   return vresult;
 fail:
-  if (alloc6 == SWIG_NEWOBJ) delete[] buf6;
   return Qnil;
 }
 
 
 SWIGINTERN VALUE
-_wrap_CQR_Encode_EncodeData__SWIG_1(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
+_wrap_QRinput_getVersion(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_getVersion", 1, argv[0] )); 
+  }
+  arg1 = (QRinput *)(argp1);
+  result = (int)QRinput_getVersion(arg1);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_setVersion(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
   int arg2 ;
-  int arg3 ;
-  BOOL arg4 ;
-  int arg5 ;
-  LPCSTR arg6 = (LPCSTR) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  bool val4 ;
-  int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  int res6 ;
-  char *buf6 = 0 ;
-  int alloc6 = 0 ;
-  BOOL result;
+  int result;
   VALUE vresult = Qnil;
   
-  if ((argc < 5) || (argc > 5)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 5)",argc); SWIG_fail;
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
   }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","EncodeData", 1, self )); 
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_setVersion", 1, argv[0] )); 
   }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
+  arg1 = (QRinput *)(argp1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","EncodeData", 2, argv[0] ));
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","QRinput_setVersion", 2, argv[1] ));
   } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(argv[1], &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "int","EncodeData", 3, argv[1] ));
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_bool(argv[2], &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), Ruby_Format_TypeError( "", "BOOL","EncodeData", 4, argv[2] ));
-  } 
-  arg4 = static_cast< BOOL >(val4);
-  ecode5 = SWIG_AsVal_int(argv[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), Ruby_Format_TypeError( "", "int","EncodeData", 5, argv[3] ));
-  } 
-  arg5 = static_cast< int >(val5);
-  res6 = SWIG_AsCharPtrAndSize(argv[4], &buf6, NULL, &alloc6);
-  if (!SWIG_IsOK(res6)) {
-    SWIG_exception_fail(SWIG_ArgError(res6), Ruby_Format_TypeError( "", "LPCSTR","EncodeData", 6, argv[4] ));
-  }
-  arg6 = reinterpret_cast< LPCSTR >(buf6);
-  result = (BOOL)(arg1)->EncodeData(arg2,arg3,arg4,arg5,arg6);
-  vresult = SWIG_From_bool(static_cast< bool >(result));
-  if (alloc6 == SWIG_NEWOBJ) delete[] buf6;
+  arg2 = (int)(val2);
+  result = (int)QRinput_setVersion(arg1,arg2);
+  vresult = SWIG_From_int((int)(result));
   return vresult;
 fail:
-  if (alloc6 == SWIG_NEWOBJ) delete[] buf6;
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE _wrap_CQR_Encode_EncodeData(int nargs, VALUE *args, VALUE self) {
-  int argc;
-  VALUE argv[8];
-  int ii;
-  
-  argc = nargs + 1;
-  argv[0] = self;
-  if (argc > 8) SWIG_fail;
-  for (ii = 1; (ii < argc); ++ii) {
-    argv[ii] = args[ii-1];
-  }
-  if (argc == 6) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_CQR_Encode, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      {
-        int res = SWIG_AsVal_int(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        {
-          int res = SWIG_AsVal_int(argv[2], NULL);
-          _v = SWIG_CheckState(res);
-        }
-        if (_v) {
-          {
-            int res = SWIG_AsVal_bool(argv[3], NULL);
-            _v = SWIG_CheckState(res);
-          }
-          if (_v) {
-            {
-              int res = SWIG_AsVal_int(argv[4], NULL);
-              _v = SWIG_CheckState(res);
-            }
-            if (_v) {
-              int res = SWIG_AsCharPtrAndSize(argv[5], 0, NULL, 0);
-              _v = SWIG_CheckState(res);
-              if (_v) {
-                return _wrap_CQR_Encode_EncodeData__SWIG_1(nargs, args, self);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  if (argc == 7) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_CQR_Encode, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      {
-        int res = SWIG_AsVal_int(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        {
-          int res = SWIG_AsVal_int(argv[2], NULL);
-          _v = SWIG_CheckState(res);
-        }
-        if (_v) {
-          {
-            int res = SWIG_AsVal_bool(argv[3], NULL);
-            _v = SWIG_CheckState(res);
-          }
-          if (_v) {
-            {
-              int res = SWIG_AsVal_int(argv[4], NULL);
-              _v = SWIG_CheckState(res);
-            }
-            if (_v) {
-              int res = SWIG_AsCharPtrAndSize(argv[5], 0, NULL, 0);
-              _v = SWIG_CheckState(res);
-              if (_v) {
-                {
-                  int res = SWIG_AsVal_int(argv[6], NULL);
-                  _v = SWIG_CheckState(res);
-                }
-                if (_v) {
-                  return _wrap_CQR_Encode_EncodeData__SWIG_0(nargs, args, self);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  
-fail:
-  Ruby_Format_OverloadedError( argc, 8, "CQR_Encode.EncodeData", 
-    "    BOOL CQR_Encode.EncodeData(int nLevel, int nVersion, BOOL bAutoExtent, int nMaskingNo, LPCSTR lpsSource, int ncSource)\n"
-    "    BOOL CQR_Encode.EncodeData(int nLevel, int nVersion, BOOL bAutoExtent, int nMaskingNo, LPCSTR lpsSource)\n");
-  
   return Qnil;
 }
 
 
 SWIGINTERN VALUE
-_wrap_CQR_Encode_results(int argc, VALUE *argv, VALUE self) {
-  CQR_Encode *arg1 = (CQR_Encode *) 0 ;
+_wrap_QRinput_getErrorCorrectionLevel(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  QRecLevel result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_getErrorCorrectionLevel", 1, argv[0] )); 
+  }
+  arg1 = (QRinput *)(argp1);
+  result = (QRecLevel)QRinput_getErrorCorrectionLevel(arg1);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_setErrorCorrectionLevel(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  QRecLevel arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_setErrorCorrectionLevel", 1, argv[0] )); 
+  }
+  arg1 = (QRinput *)(argp1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "QRecLevel","QRinput_setErrorCorrectionLevel", 2, argv[1] ));
+  } 
+  arg2 = (QRecLevel)(val2);
+  result = (int)QRinput_setErrorCorrectionLevel(arg1,arg2);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_free(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_free", 1, argv[0] )); 
+  }
+  arg1 = (QRinput *)(argp1);
+  QRinput_free(arg1);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_check(int argc, VALUE *argv, VALUE self) {
+  QRencodeMode arg1 ;
+  int arg2 ;
+  unsigned char *arg3 = (unsigned char *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 3) || (argc > 3)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 3)",argc); SWIG_fail;
+  }
+  ecode1 = SWIG_AsVal_int(argv[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "QRencodeMode","QRinput_check", 1, argv[0] ));
+  } 
+  arg1 = (QRencodeMode)(val1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","QRinput_check", 2, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  res3 = SWIG_ConvertPtr(argv[2], &argp3,SWIGTYPE_p_unsigned_char, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), Ruby_Format_TypeError( "", "unsigned char const *","QRinput_check", 3, argv[2] )); 
+  }
+  arg3 = (unsigned char *)(argp3);
+  result = (int)QRinput_check(arg1,arg2,(unsigned char const *)arg3);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_Struct_new(int argc, VALUE *argv, VALUE self) {
+  QRinput_Struct *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  result = (QRinput_Struct *)QRinput_Struct_new();
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_Struct_setParity(int argc, VALUE *argv, VALUE self) {
+  QRinput_Struct *arg1 = (QRinput_Struct *) 0 ;
+  unsigned char arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput_Struct *","QRinput_Struct_setParity", 1, argv[0] )); 
+  }
+  arg1 = (QRinput_Struct *)(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "unsigned char","QRinput_Struct_setParity", 2, argv[1] ));
+  } 
+  arg2 = (unsigned char)(val2);
+  QRinput_Struct_setParity(arg1,arg2);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_Struct_appendInput(int argc, VALUE *argv, VALUE self) {
+  QRinput_Struct *arg1 = (QRinput_Struct *) 0 ;
+  QRinput *arg2 = (QRinput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput_Struct *","QRinput_Struct_appendInput", 1, argv[0] )); 
+  }
+  arg1 = (QRinput_Struct *)(argp1);
+  res2 = SWIG_ConvertPtr(argv[1], &argp2,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "QRinput *","QRinput_Struct_appendInput", 2, argv[1] )); 
+  }
+  arg2 = (QRinput *)(argp2);
+  result = (int)QRinput_Struct_appendInput(arg1,arg2);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_Struct_free(int argc, VALUE *argv, VALUE self) {
+  QRinput_Struct *arg1 = (QRinput_Struct *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput_Struct *","QRinput_Struct_free", 1, argv[0] )); 
+  }
+  arg1 = (QRinput_Struct *)(argp1);
+  QRinput_Struct_free(arg1);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_splitQRinputToStruct(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  QRinput_Struct *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRinput_splitQRinputToStruct", 1, argv[0] )); 
+  }
+  arg1 = (QRinput *)(argp1);
+  result = (QRinput_Struct *)QRinput_splitQRinputToStruct(arg1);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRinput_Struct_insertStructuredAppendHeaders(int argc, VALUE *argv, VALUE self) {
+  QRinput_Struct *arg1 = (QRinput_Struct *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput_Struct *","QRinput_Struct_insertStructuredAppendHeaders", 1, argv[0] )); 
+  }
+  arg1 = (QRinput_Struct *)(argp1);
+  result = (int)QRinput_Struct_insertStructuredAppendHeaders(arg1);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+swig_class SwigClassQRcode;
+
+SWIGINTERN VALUE
+_wrap_QRcode_version_set(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","version", 1, self )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  ecode2 = SWIG_AsVal_int(argv[0], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","version", 2, argv[0] ));
+  } 
+  arg2 = (int)(val2);
+  if (arg1) (arg1)->version = arg2;
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_version_get(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","version", 1, self )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  result = (int) ((arg1)->version);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_width_set(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","width", 1, self )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  ecode2 = SWIG_AsVal_int(argv[0], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","width", 2, argv[0] ));
+  } 
+  arg2 = (int)(val2);
+  if (arg1) (arg1)->width = arg2;
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_width_get(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","width", 1, self )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  result = (int) ((arg1)->width);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_data_set(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  unsigned char *arg2 = (unsigned char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","data", 1, self )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_unsigned_char, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "unsigned char *","data", 2, argv[0] )); 
+  }
+  arg2 = (unsigned char *)(argp2);
+  if (arg1) (arg1)->data = arg2;
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_data_get(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","data", 1, self )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  result = (unsigned char *) ((arg1)->data);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_unsigned_char, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_modules(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   VALUE result;
@@ -3279,14 +2598,514 @@ _wrap_CQR_Encode_results(int argc, VALUE *argv, VALUE self) {
   if ((argc < 0) || (argc > 0)) {
     rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
   }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CQR_Encode, 0 |  0 );
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "CQR_Encode *","results", 1, self )); 
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","modules", 1, self )); 
   }
-  arg1 = reinterpret_cast< CQR_Encode * >(argp1);
-  result = (VALUE)CQR_Encode_results(arg1);
+  arg1 = (QRcode *)(argp1);
+  result = (VALUE)QRcode_modules(arg1);
   vresult = result;
   return vresult;
+fail:
+  return Qnil;
+}
+
+
+#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
+SWIGINTERN VALUE
+_wrap_QRcode_allocate(VALUE self) {
+#else
+  SWIGINTERN VALUE
+  _wrap_QRcode_allocate(int argc, VALUE *argv, VALUE self) {
+#endif
+    
+    
+    VALUE vresult = SWIG_NewClassInstance(self, SWIGTYPE_p_QRcode);
+#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
+    rb_obj_call_init(vresult, argc, argv);
+#endif
+    return vresult;
+  }
+  
+
+SWIGINTERN VALUE
+_wrap_new_QRcode(int argc, VALUE *argv, VALUE self) {
+  QRcode *result = 0 ;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  result = (QRcode *)calloc(1, sizeof(QRcode));
+  DATA_PTR(self) = result;
+  return self;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN void
+free_QRcode(QRcode *arg1) {
+    free((char *) arg1);
+}
+
+swig_class SwigClass_QRcode_List;
+
+SWIGINTERN VALUE
+_wrap__QRcode_List_code_set(int argc, VALUE *argv, VALUE self) {
+  struct _QRcode_List *arg1 = (struct _QRcode_List *) 0 ;
+  QRcode *arg2 = (QRcode *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "struct _QRcode_List *","code", 1, self )); 
+  }
+  arg1 = (struct _QRcode_List *)(argp1);
+  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p_QRcode, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "QRcode *","code", 2, argv[0] )); 
+  }
+  arg2 = (QRcode *)(argp2);
+  if (arg1) (arg1)->code = arg2;
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap__QRcode_List_code_get(int argc, VALUE *argv, VALUE self) {
+  struct _QRcode_List *arg1 = (struct _QRcode_List *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  QRcode *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "struct _QRcode_List *","code", 1, self )); 
+  }
+  arg1 = (struct _QRcode_List *)(argp1);
+  result = (QRcode *) ((arg1)->code);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_QRcode, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap__QRcode_List_next_set(int argc, VALUE *argv, VALUE self) {
+  struct _QRcode_List *arg1 = (struct _QRcode_List *) 0 ;
+  QRcode_List *arg2 = (QRcode_List *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "struct _QRcode_List *","next", 1, self )); 
+  }
+  arg1 = (struct _QRcode_List *)(argp1);
+  res2 = SWIG_ConvertPtr(argv[0], &argp2,SWIGTYPE_p__QRcode_List, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "QRcode_List *","next", 2, argv[0] )); 
+  }
+  arg2 = (QRcode_List *)(argp2);
+  if (arg1) (arg1)->next = arg2;
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap__QRcode_List_next_get(int argc, VALUE *argv, VALUE self) {
+  struct _QRcode_List *arg1 = (struct _QRcode_List *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  QRcode_List *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "struct _QRcode_List *","next", 1, self )); 
+  }
+  arg1 = (struct _QRcode_List *)(argp1);
+  result = (QRcode_List *) ((arg1)->next);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRcode_List, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
+SWIGINTERN VALUE
+_wrap__QRcode_List_allocate(VALUE self) {
+#else
+  SWIGINTERN VALUE
+  _wrap__QRcode_List_allocate(int argc, VALUE *argv, VALUE self) {
+#endif
+    
+    
+    VALUE vresult = SWIG_NewClassInstance(self, SWIGTYPE_p__QRcode_List);
+#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
+    rb_obj_call_init(vresult, argc, argv);
+#endif
+    return vresult;
+  }
+  
+
+SWIGINTERN VALUE
+_wrap_new__QRcode_List(int argc, VALUE *argv, VALUE self) {
+  struct _QRcode_List *result = 0 ;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  result = (struct _QRcode_List *)calloc(1, sizeof(struct _QRcode_List));
+  DATA_PTR(self) = result;
+  return self;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN void
+free__QRcode_List(struct _QRcode_List *arg1) {
+    free((char *) arg1);
+}
+
+SWIGINTERN VALUE
+_wrap_QRcode_encodeInput(int argc, VALUE *argv, VALUE self) {
+  QRinput *arg1 = (QRinput *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  QRcode *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput *","QRcode_encodeInput", 1, argv[0] )); 
+  }
+  arg1 = (QRinput *)(argp1);
+  result = (QRcode *)QRcode_encodeInput(arg1);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_QRcode, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_encodeString(int argc, VALUE *argv, VALUE self) {
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  QRecLevel arg3 ;
+  QRencodeMode arg4 ;
+  int arg5 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  QRcode *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 5) || (argc > 5)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 5)",argc); SWIG_fail;
+  }
+  res1 = SWIG_AsCharPtrAndSize(argv[0], &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "char const *","QRcode_encodeString", 1, argv[0] ));
+  }
+  arg1 = (char *)(buf1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","QRcode_encodeString", 2, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_int(argv[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "QRecLevel","QRcode_encodeString", 3, argv[2] ));
+  } 
+  arg3 = (QRecLevel)(val3);
+  ecode4 = SWIG_AsVal_int(argv[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), Ruby_Format_TypeError( "", "QRencodeMode","QRcode_encodeString", 4, argv[3] ));
+  } 
+  arg4 = (QRencodeMode)(val4);
+  ecode5 = SWIG_AsVal_int(argv[4], &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), Ruby_Format_TypeError( "", "int","QRcode_encodeString", 5, argv[4] ));
+  } 
+  arg5 = (int)(val5);
+  result = (QRcode *)QRcode_encodeString((char const *)arg1,arg2,arg3,arg4,arg5);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_QRcode, 0 |  0 );
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return vresult;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_encodeString8bit(int argc, VALUE *argv, VALUE self) {
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  QRecLevel arg3 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  QRcode *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 3) || (argc > 3)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 3)",argc); SWIG_fail;
+  }
+  res1 = SWIG_AsCharPtrAndSize(argv[0], &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "char const *","QRcode_encodeString8bit", 1, argv[0] ));
+  }
+  arg1 = (char *)(buf1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","QRcode_encodeString8bit", 2, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_int(argv[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "QRecLevel","QRcode_encodeString8bit", 3, argv[2] ));
+  } 
+  arg3 = (QRecLevel)(val3);
+  result = (QRcode *)QRcode_encodeString8bit((char const *)arg1,arg2,arg3);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_QRcode, 0 |  0 );
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return vresult;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_free(int argc, VALUE *argv, VALUE self) {
+  QRcode *arg1 = (QRcode *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p_QRcode, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode *","QRcode_free", 1, argv[0] )); 
+  }
+  arg1 = (QRcode *)(argp1);
+  QRcode_free(arg1);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_encodeInputStructured(int argc, VALUE *argv, VALUE self) {
+  QRinput_Struct *arg1 = (QRinput_Struct *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  QRcode_List *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRinput_Struct, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRinput_Struct *","QRcode_encodeInputStructured", 1, argv[0] )); 
+  }
+  arg1 = (QRinput_Struct *)(argp1);
+  result = (QRcode_List *)QRcode_encodeInputStructured(arg1);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRcode_List, 0 |  0 );
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_encodeStringStructured(int argc, VALUE *argv, VALUE self) {
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  QRecLevel arg3 ;
+  QRencodeMode arg4 ;
+  int arg5 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  QRcode_List *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 5) || (argc > 5)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 5)",argc); SWIG_fail;
+  }
+  res1 = SWIG_AsCharPtrAndSize(argv[0], &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "char const *","QRcode_encodeStringStructured", 1, argv[0] ));
+  }
+  arg1 = (char *)(buf1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","QRcode_encodeStringStructured", 2, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_int(argv[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "QRecLevel","QRcode_encodeStringStructured", 3, argv[2] ));
+  } 
+  arg3 = (QRecLevel)(val3);
+  ecode4 = SWIG_AsVal_int(argv[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), Ruby_Format_TypeError( "", "QRencodeMode","QRcode_encodeStringStructured", 4, argv[3] ));
+  } 
+  arg4 = (QRencodeMode)(val4);
+  ecode5 = SWIG_AsVal_int(argv[4], &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), Ruby_Format_TypeError( "", "int","QRcode_encodeStringStructured", 5, argv[4] ));
+  } 
+  arg5 = (int)(val5);
+  result = (QRcode_List *)QRcode_encodeStringStructured((char const *)arg1,arg2,arg3,arg4,arg5);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return vresult;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_encodeString8bitStructured(int argc, VALUE *argv, VALUE self) {
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  QRecLevel arg3 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  QRcode_List *result = 0 ;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 3) || (argc > 3)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 3)",argc); SWIG_fail;
+  }
+  res1 = SWIG_AsCharPtrAndSize(argv[0], &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "char const *","QRcode_encodeString8bitStructured", 1, argv[0] ));
+  }
+  arg1 = (char *)(buf1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","QRcode_encodeString8bitStructured", 2, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_int(argv[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "QRecLevel","QRcode_encodeString8bitStructured", 3, argv[2] ));
+  } 
+  arg3 = (QRecLevel)(val3);
+  result = (QRcode_List *)QRcode_encodeString8bitStructured((char const *)arg1,arg2,arg3);
+  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return vresult;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_List_size(int argc, VALUE *argv, VALUE self) {
+  QRcode_List *arg1 = (QRcode_List *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode_List *","QRcode_List_size", 1, argv[0] )); 
+  }
+  arg1 = (QRcode_List *)(argp1);
+  result = (int)QRcode_List_size(arg1);
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_QRcode_List_free(int argc, VALUE *argv, VALUE self) {
+  QRcode_List *arg1 = (QRcode_List *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  res1 = SWIG_ConvertPtr(argv[0], &argp1,SWIGTYPE_p__QRcode_List, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "QRcode_List *","QRcode_List_free", 1, argv[0] )); 
+  }
+  arg1 = (QRcode_List *)(argp1);
+  QRcode_List_free(arg1);
+  return Qnil;
 fail:
   return Qnil;
 }
@@ -3295,48 +3114,44 @@ fail:
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_CQR_Encode = {"_p_CQR_Encode", "CQR_Encode *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_a_177__unsigned_char = {"_p_a_177__unsigned_char", "unsigned char (*)[177]|BYTE (*)[177]", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_bool = {"_p_bool", "BOOL *|bool *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_QRcode = {"_p_QRcode", "QRcode *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_QRecLevel = {"_p_QRecLevel", "enum QRecLevel *|QRecLevel *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_QRencodeMode = {"_p_QRencodeMode", "enum QRencodeMode *|QRencodeMode *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p__QRcode_List = {"_p__QRcode_List", "struct _QRcode_List *|QRcode_List *|_QRcode_List *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p__QRinput = {"_p__QRinput", "struct _QRinput *|QRinput *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p__QRinput_Struct = {"_p__QRinput_Struct", "struct _QRinput_Struct *|QRinput_Struct *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_int = {"_p_int", "int *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_tagQR_VERSIONINFO = {"_p_tagQR_VERSIONINFO", "tagQR_VERSIONINFO *|QR_VERSIONINFO *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_tagRS_BLOCKINFO = {"_p_tagRS_BLOCKINFO", "tagRS_BLOCKINFO *|RS_BLOCKINFO *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *|BYTE *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "WORD *|unsigned short *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
-  &_swigt__p_CQR_Encode,
-  &_swigt__p_a_177__unsigned_char,
-  &_swigt__p_bool,
+  &_swigt__p_QRcode,
+  &_swigt__p_QRecLevel,
+  &_swigt__p_QRencodeMode,
+  &_swigt__p__QRcode_List,
+  &_swigt__p__QRinput,
+  &_swigt__p__QRinput_Struct,
   &_swigt__p_char,
-  &_swigt__p_int,
-  &_swigt__p_tagQR_VERSIONINFO,
-  &_swigt__p_tagRS_BLOCKINFO,
   &_swigt__p_unsigned_char,
-  &_swigt__p_unsigned_short,
 };
 
-static swig_cast_info _swigc__p_CQR_Encode[] = {  {&_swigt__p_CQR_Encode, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_a_177__unsigned_char[] = {  {&_swigt__p_a_177__unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_bool[] = {  {&_swigt__p_bool, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_QRcode[] = {  {&_swigt__p_QRcode, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_QRecLevel[] = {  {&_swigt__p_QRecLevel, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_QRencodeMode[] = {  {&_swigt__p_QRencodeMode, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p__QRcode_List[] = {  {&_swigt__p__QRcode_List, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p__QRinput[] = {  {&_swigt__p__QRinput, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p__QRinput_Struct[] = {  {&_swigt__p__QRinput_Struct, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_tagQR_VERSIONINFO[] = {  {&_swigt__p_tagQR_VERSIONINFO, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_tagRS_BLOCKINFO[] = {  {&_swigt__p_tagRS_BLOCKINFO, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_unsigned_short[] = {  {&_swigt__p_unsigned_short, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
-  _swigc__p_CQR_Encode,
-  _swigc__p_a_177__unsigned_char,
-  _swigc__p_bool,
+  _swigc__p_QRcode,
+  _swigc__p_QRecLevel,
+  _swigc__p_QRencodeMode,
+  _swigc__p__QRcode_List,
+  _swigc__p__QRinput,
+  _swigc__p__QRinput_Struct,
   _swigc__p_char,
-  _swigc__p_int,
-  _swigc__p_tagQR_VERSIONINFO,
-  _swigc__p_tagRS_BLOCKINFO,
   _swigc__p_unsigned_char,
-  _swigc__p_unsigned_short,
 };
 
 
@@ -3597,81 +3412,66 @@ SWIGEXPORT void Init_RQREncoder(void) {
   }
   
   SWIG_RubyInitializeTrackings();
-  rb_define_const(mRQREncoder, "TRUE", SWIG_From_bool(static_cast< bool >(true)));
-  rb_define_const(mRQREncoder, "FALSE", SWIG_From_bool(static_cast< bool >(false)));
-  rb_define_const(mRQREncoder, "QR_LEVEL_L", SWIG_From_int(static_cast< int >(0)));
-  rb_define_const(mRQREncoder, "QR_LEVEL_M", SWIG_From_int(static_cast< int >(1)));
-  rb_define_const(mRQREncoder, "QR_LEVEL_Q", SWIG_From_int(static_cast< int >(2)));
-  rb_define_const(mRQREncoder, "QR_LEVEL_H", SWIG_From_int(static_cast< int >(3)));
-  rb_define_const(mRQREncoder, "QR_MODE_NUMERAL", SWIG_From_int(static_cast< int >(0)));
-  rb_define_const(mRQREncoder, "QR_MODE_ALPHABET", SWIG_From_int(static_cast< int >(1)));
-  rb_define_const(mRQREncoder, "QR_MODE_8BIT", SWIG_From_int(static_cast< int >(2)));
-  rb_define_const(mRQREncoder, "QR_MODE_KANJI", SWIG_From_int(static_cast< int >(3)));
-  rb_define_const(mRQREncoder, "QR_VRESION_S", SWIG_From_int(static_cast< int >(0)));
-  rb_define_const(mRQREncoder, "QR_VRESION_M", SWIG_From_int(static_cast< int >(1)));
-  rb_define_const(mRQREncoder, "QR_VRESION_L", SWIG_From_int(static_cast< int >(2)));
-  rb_define_const(mRQREncoder, "MAX_ALLCODEWORD", SWIG_From_int(static_cast< int >(3706)));
-  rb_define_const(mRQREncoder, "MAX_DATACODEWORD", SWIG_From_int(static_cast< int >(2956)));
-  rb_define_const(mRQREncoder, "MAX_CODEBLOCK", SWIG_From_int(static_cast< int >(153)));
-  rb_define_const(mRQREncoder, "MAX_MODULESIZE", SWIG_From_int(static_cast< int >(177)));
-  rb_define_const(mRQREncoder, "QR_MARGIN", SWIG_From_int(static_cast< int >(4)));
+  rb_define_const(mRQREncoder, "QR_MODE_NUL", SWIG_From_int((int)(QR_MODE_NUL)));
+  rb_define_const(mRQREncoder, "QR_MODE_NUM", SWIG_From_int((int)(QR_MODE_NUM)));
+  rb_define_const(mRQREncoder, "QR_MODE_AN", SWIG_From_int((int)(QR_MODE_AN)));
+  rb_define_const(mRQREncoder, "QR_MODE_8", SWIG_From_int((int)(QR_MODE_8)));
+  rb_define_const(mRQREncoder, "QR_MODE_KANJI", SWIG_From_int((int)(QR_MODE_KANJI)));
+  rb_define_const(mRQREncoder, "QR_MODE_STRUCTURE", SWIG_From_int((int)(QR_MODE_STRUCTURE)));
+  rb_define_const(mRQREncoder, "QR_ECLEVEL_L", SWIG_From_int((int)(QR_ECLEVEL_L)));
+  rb_define_const(mRQREncoder, "QR_ECLEVEL_M", SWIG_From_int((int)(QR_ECLEVEL_M)));
+  rb_define_const(mRQREncoder, "QR_ECLEVEL_Q", SWIG_From_int((int)(QR_ECLEVEL_Q)));
+  rb_define_const(mRQREncoder, "QR_ECLEVEL_H", SWIG_From_int((int)(QR_ECLEVEL_H)));
+  rb_define_module_function(mRQREncoder, "QRinput_new", _wrap_QRinput_new, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_new2", _wrap_QRinput_new2, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_append", _wrap_QRinput_append, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_getVersion", _wrap_QRinput_getVersion, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_setVersion", _wrap_QRinput_setVersion, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_getErrorCorrectionLevel", _wrap_QRinput_getErrorCorrectionLevel, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_setErrorCorrectionLevel", _wrap_QRinput_setErrorCorrectionLevel, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_free", _wrap_QRinput_free, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_check", _wrap_QRinput_check, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_Struct_new", _wrap_QRinput_Struct_new, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_Struct_setParity", _wrap_QRinput_Struct_setParity, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_Struct_appendInput", _wrap_QRinput_Struct_appendInput, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_Struct_free", _wrap_QRinput_Struct_free, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_splitQRinputToStruct", _wrap_QRinput_splitQRinputToStruct, -1);
+  rb_define_module_function(mRQREncoder, "QRinput_Struct_insertStructuredAppendHeaders", _wrap_QRinput_Struct_insertStructuredAppendHeaders, -1);
   
-  SwigClassRS_BLOCKINFO.klass = rb_define_class_under(mRQREncoder, "RS_BLOCKINFO", rb_cObject);
-  SWIG_TypeClientData(SWIGTYPE_p_tagRS_BLOCKINFO, (void *) &SwigClassRS_BLOCKINFO);
-  rb_define_alloc_func(SwigClassRS_BLOCKINFO.klass, _wrap_RS_BLOCKINFO_allocate);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "initialize", VALUEFUNC(_wrap_new_RS_BLOCKINFO), -1);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "ncRSBlock=", VALUEFUNC(_wrap_RS_BLOCKINFO_ncRSBlock_set), -1);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "ncRSBlock", VALUEFUNC(_wrap_RS_BLOCKINFO_ncRSBlock_get), -1);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "ncAllCodeWord=", VALUEFUNC(_wrap_RS_BLOCKINFO_ncAllCodeWord_set), -1);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "ncAllCodeWord", VALUEFUNC(_wrap_RS_BLOCKINFO_ncAllCodeWord_get), -1);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "ncDataCodeWord=", VALUEFUNC(_wrap_RS_BLOCKINFO_ncDataCodeWord_set), -1);
-  rb_define_method(SwigClassRS_BLOCKINFO.klass, "ncDataCodeWord", VALUEFUNC(_wrap_RS_BLOCKINFO_ncDataCodeWord_get), -1);
-  SwigClassRS_BLOCKINFO.mark = 0;
-  SwigClassRS_BLOCKINFO.destroy = (void (*)(void *)) free_RS_BLOCKINFO;
-  SwigClassRS_BLOCKINFO.trackObjects = 0;
+  SwigClassQRcode.klass = rb_define_class_under(mRQREncoder, "QRcode", rb_cObject);
+  SWIG_TypeClientData(SWIGTYPE_p_QRcode, (void *) &SwigClassQRcode);
+  rb_define_alloc_func(SwigClassQRcode.klass, _wrap_QRcode_allocate);
+  rb_define_method(SwigClassQRcode.klass, "initialize", _wrap_new_QRcode, -1);
+  rb_define_method(SwigClassQRcode.klass, "version=", _wrap_QRcode_version_set, -1);
+  rb_define_method(SwigClassQRcode.klass, "version", _wrap_QRcode_version_get, -1);
+  rb_define_method(SwigClassQRcode.klass, "width=", _wrap_QRcode_width_set, -1);
+  rb_define_method(SwigClassQRcode.klass, "width", _wrap_QRcode_width_get, -1);
+  rb_define_method(SwigClassQRcode.klass, "data=", _wrap_QRcode_data_set, -1);
+  rb_define_method(SwigClassQRcode.klass, "data", _wrap_QRcode_data_get, -1);
+  rb_define_method(SwigClassQRcode.klass, "modules", _wrap_QRcode_modules, -1);
+  SwigClassQRcode.mark = 0;
+  SwigClassQRcode.destroy = (void (*)(void *)) free_QRcode;
+  SwigClassQRcode.trackObjects = 0;
   
-  SwigClassQR_VERSIONINFO.klass = rb_define_class_under(mRQREncoder, "QR_VERSIONINFO", rb_cObject);
-  SWIG_TypeClientData(SWIGTYPE_p_tagQR_VERSIONINFO, (void *) &SwigClassQR_VERSIONINFO);
-  rb_define_alloc_func(SwigClassQR_VERSIONINFO.klass, _wrap_QR_VERSIONINFO_allocate);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "initialize", VALUEFUNC(_wrap_new_QR_VERSIONINFO), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "nVersionNo=", VALUEFUNC(_wrap_QR_VERSIONINFO_nVersionNo_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "nVersionNo", VALUEFUNC(_wrap_QR_VERSIONINFO_nVersionNo_get), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "ncAllCodeWord=", VALUEFUNC(_wrap_QR_VERSIONINFO_ncAllCodeWord_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "ncAllCodeWord", VALUEFUNC(_wrap_QR_VERSIONINFO_ncAllCodeWord_get), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "ncDataCodeWord=", VALUEFUNC(_wrap_QR_VERSIONINFO_ncDataCodeWord_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "ncDataCodeWord", VALUEFUNC(_wrap_QR_VERSIONINFO_ncDataCodeWord_get), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "ncAlignPoint=", VALUEFUNC(_wrap_QR_VERSIONINFO_ncAlignPoint_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "ncAlignPoint", VALUEFUNC(_wrap_QR_VERSIONINFO_ncAlignPoint_get), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "nAlignPoint=", VALUEFUNC(_wrap_QR_VERSIONINFO_nAlignPoint_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "nAlignPoint", VALUEFUNC(_wrap_QR_VERSIONINFO_nAlignPoint_get), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "RS_BlockInfo1=", VALUEFUNC(_wrap_QR_VERSIONINFO_RS_BlockInfo1_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "RS_BlockInfo1", VALUEFUNC(_wrap_QR_VERSIONINFO_RS_BlockInfo1_get), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "RS_BlockInfo2=", VALUEFUNC(_wrap_QR_VERSIONINFO_RS_BlockInfo2_set), -1);
-  rb_define_method(SwigClassQR_VERSIONINFO.klass, "RS_BlockInfo2", VALUEFUNC(_wrap_QR_VERSIONINFO_RS_BlockInfo2_get), -1);
-  SwigClassQR_VERSIONINFO.mark = 0;
-  SwigClassQR_VERSIONINFO.destroy = (void (*)(void *)) free_QR_VERSIONINFO;
-  SwigClassQR_VERSIONINFO.trackObjects = 0;
-  
-  SwigClassCQR_Encode.klass = rb_define_class_under(mRQREncoder, "CQR_Encode", rb_cObject);
-  SWIG_TypeClientData(SWIGTYPE_p_CQR_Encode, (void *) &SwigClassCQR_Encode);
-  rb_define_alloc_func(SwigClassCQR_Encode.klass, _wrap_CQR_Encode_allocate);
-  rb_define_method(SwigClassCQR_Encode.klass, "initialize", VALUEFUNC(_wrap_new_CQR_Encode), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nLevel=", VALUEFUNC(_wrap_CQR_Encode_m_nLevel_set), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nLevel", VALUEFUNC(_wrap_CQR_Encode_m_nLevel_get), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nVersion=", VALUEFUNC(_wrap_CQR_Encode_m_nVersion_set), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nVersion", VALUEFUNC(_wrap_CQR_Encode_m_nVersion_get), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_bAutoExtent=", VALUEFUNC(_wrap_CQR_Encode_m_bAutoExtent_set), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_bAutoExtent", VALUEFUNC(_wrap_CQR_Encode_m_bAutoExtent_get), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nMaskingNo=", VALUEFUNC(_wrap_CQR_Encode_m_nMaskingNo_set), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nMaskingNo", VALUEFUNC(_wrap_CQR_Encode_m_nMaskingNo_get), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nSymbleSize=", VALUEFUNC(_wrap_CQR_Encode_m_nSymbleSize_set), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_nSymbleSize", VALUEFUNC(_wrap_CQR_Encode_m_nSymbleSize_get), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_byModuleData=", VALUEFUNC(_wrap_CQR_Encode_m_byModuleData_set), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "m_byModuleData", VALUEFUNC(_wrap_CQR_Encode_m_byModuleData_get), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "EncodeData", VALUEFUNC(_wrap_CQR_Encode_EncodeData), -1);
-  rb_define_method(SwigClassCQR_Encode.klass, "results", VALUEFUNC(_wrap_CQR_Encode_results), -1);
-  SwigClassCQR_Encode.mark = 0;
-  SwigClassCQR_Encode.destroy = (void (*)(void *)) free_CQR_Encode;
-  SwigClassCQR_Encode.trackObjects = 0;
+  SwigClass_QRcode_List.klass = rb_define_class_under(mRQREncoder, "_QRcode_List", rb_cObject);
+  SWIG_TypeClientData(SWIGTYPE_p__QRcode_List, (void *) &SwigClass_QRcode_List);
+  rb_define_alloc_func(SwigClass_QRcode_List.klass, _wrap__QRcode_List_allocate);
+  rb_define_method(SwigClass_QRcode_List.klass, "initialize", _wrap_new__QRcode_List, -1);
+  rb_define_method(SwigClass_QRcode_List.klass, "code=", _wrap__QRcode_List_code_set, -1);
+  rb_define_method(SwigClass_QRcode_List.klass, "code", _wrap__QRcode_List_code_get, -1);
+  rb_define_method(SwigClass_QRcode_List.klass, "next=", _wrap__QRcode_List_next_set, -1);
+  rb_define_method(SwigClass_QRcode_List.klass, "next", _wrap__QRcode_List_next_get, -1);
+  SwigClass_QRcode_List.mark = 0;
+  SwigClass_QRcode_List.destroy = (void (*)(void *)) free__QRcode_List;
+  SwigClass_QRcode_List.trackObjects = 0;
+  rb_define_module_function(mRQREncoder, "QRcode_encodeInput", _wrap_QRcode_encodeInput, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_encodeString", _wrap_QRcode_encodeString, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_encodeString8bit", _wrap_QRcode_encodeString8bit, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_free", _wrap_QRcode_free, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_encodeInputStructured", _wrap_QRcode_encodeInputStructured, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_encodeStringStructured", _wrap_QRcode_encodeStringStructured, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_encodeString8bitStructured", _wrap_QRcode_encodeString8bitStructured, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_List_size", _wrap_QRcode_List_size, -1);
+  rb_define_module_function(mRQREncoder, "QRcode_List_free", _wrap_QRcode_List_free, -1);
 }
 

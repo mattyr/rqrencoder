@@ -2,5 +2,6 @@ pkg/*
 *.gem
 .bundle
 *.swp
-lib/rqrencoder/CQREncoder.bundle
+lib/rqrencoder/RQREncoder.bundle
+Gemfile.lock
 tmp/*

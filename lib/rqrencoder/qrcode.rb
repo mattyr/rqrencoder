@@ -1,13 +1,17 @@
 module RQREncoder
   class QRCode
   	
-    def initialize(level, version, masking, size, modules)
+    def initialize(content, level, version, size, modules)
+			@content = content
       @level = level
       @version = version
-      @masking = masking
       @size = size
       @modules = modules
     end
+
+		def content
+			@content
+		end
 
     def level
       @level
@@ -17,10 +21,6 @@ module RQREncoder
       @version
     end
     
-    def masking
-      @masking
-    end
-
     def size
       @size
     end
