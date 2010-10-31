@@ -4,7 +4,9 @@
 
 ## Install
 
-Install with Rubygems:
+You'll need libqrencode installed on your machine.
+
+Then, install with Rubygems:
 
     gem install rqrencoder
 
@@ -25,4 +27,4 @@ Create an encoder, and encode away!  The QRCode result contains a grid of bits i
 
 ## Author
 
-Ruby wrapper by Matt Robinson, majority of C++ Encoding engine is from rqr project
+Matt Robinson

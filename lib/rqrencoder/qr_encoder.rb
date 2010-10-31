@@ -32,7 +32,6 @@ module RQREncoder
 
     def encode(data)
 			c_code_result = RQREncoder.QRcode_encodeString(data, @options[:version], @options[:level], @options[:mode], @options[:case_sensitive] ? 1 : 0) 
-			puts c_code_result.inspect
       QRCode.new(data, @options[:level], c_code_result.version, c_code_result.width, c_code_result.modules)
     end
 	
